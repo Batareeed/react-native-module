@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RestrictTo;
 
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.common.LifecycleState;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 import com.urbanairship.UAirship;
 
@@ -151,7 +152,7 @@ public class EventEmitter {
 
     private void notifyPendingForegroundEvents() {
         ReactContext reactContext = this.reactContext;
-        if (reactContext == null || !reactContext.hasActiveCatalystInstance()) {
+        if (reactContext == null || !reactContext.hasActiveCatalystInstance() || reactContext.getLifecycleState() == LifecycleState.BEFORE_CREATE) {
             return;
         }
 
