@@ -760,6 +760,14 @@ export class UrbanAirship {
     EventEmitter.removeListener(convertEventEnum(eventType), listener);
   }
 
+  static createEventBridgeIfNotPresent() {
+    EventEmitter.createEventBridgeIfNotPresent();
+  }
+
+  static destroyEventBridge() {
+    EventEmitter.destroyEventBridge();
+  }
+
   /**
    * Removes all listeners for Urban Airship events.
    *
