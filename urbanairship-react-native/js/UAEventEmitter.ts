@@ -19,6 +19,8 @@ export abstract class AirshipEventBridge {
     this.dispatchEventsCallback = dispatchEventsCallback;
   }
 
+  abstract destroyListeners(): void;
+
   abstract notifyAirshipListenerAdded(eventListener: string): void;
 }
 
@@ -44,6 +46,15 @@ class DefaultAirshipEventBridge extends AirshipEventBridge {
     }
   }
 
+  destroyListeners() {
+    if (Platform.OS === 'android') {
+      AppRegistry.removeAllListeners('AirshipAndroidBackgroundEventTask');
+      this.eventEmitter.removeAllListeners("com.urbanairship.onPendingForegroundEvent");
+    } else if (Platform.OS === 'ios') {
+      this.eventEmitter.removeAllListeners("com.urbanairship.onPendingEvent");
+    }
+  }
+
   notifyAirshipListenerAdded(eventType: string): void {
     this.nativeModule.onAirshipListenerAdded(eventType);
   }
@@ -55,7 +66,7 @@ class DefaultAirshipEventBridge extends AirshipEventBridge {
  * @hidden
  */
 export class UAEventEmitter {
-  airshipEventBridge: AirshipEventBridge;
+  airshipEventBridge?: AirshipEventBridge;
   listeners: Map<string, Array<(...args: any[]) => any>>;
 
   constructor(airshipEventBridgeFactory?: (callback: DispatchEventsCallback) => AirshipEventBridge) {
@@ -79,11 +90,22 @@ export class UAEventEmitter {
     }
 
     this.listeners.get(eventType)?.push(listener);
-    this.airshipEventBridge.notifyAirshipListenerAdded(eventType);
+    this.airshipEventBridge?.notifyAirshipListenerAdded(eventType);
   }
 
   removeAllListeners(eventType: string) {
     this.listeners.set(eventType, new Array());
+  }
+
+  createEventBridgeIfNotPresent(){
+    if (!this.airshipEventBridge) {
+      this.airshipEventBridge = new DefaultAirshipEventBridge(this.dispatchEvents.bind(this));
+    }
+  }
+
+  destroyEventBridge() {
+    this.airshipEventBridge?.destroyListeners();
+    this.airshipEventBridge = undefined;
   }
 
   private async dispatchEvents(source: (eventType: string) => Promise<any>): Promise<any> {
