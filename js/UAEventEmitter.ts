@@ -48,7 +48,6 @@ class DefaultAirshipEventBridge extends AirshipEventBridge {
 
   destroyListeners() {
     if (Platform.OS === 'android') {
-      AppRegistry.removeAllListeners('AirshipAndroidBackgroundEventTask');
       this.eventEmitter.removeAllListeners("com.urbanairship.onPendingForegroundEvent");
     } else if (Platform.OS === 'ios') {
       this.eventEmitter.removeAllListeners("com.urbanairship.onPendingEvent");
